@@ -1,2 +1,8 @@
+>$ cat .gitignore
+.gitignore
+contracts/.placeholder
+test/.placeholder
+node_modules
 truffle.js
 truffle-config.js
+deploy_mnemonic.key

@@ -1,5 +1,5 @@
   // See <http://truffleframework.com/docs/advanced/configuration>
-  //TEST2
+  //TEST3
 
 require('dotenv').config();
 const Web3 = require("web3");
