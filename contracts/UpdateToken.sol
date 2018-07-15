@@ -92,6 +92,8 @@ contract UpdateTokenStandard {
     uint public stakeMaxAge = 365 days;
     uint public maxMintProofOfStake = convertDecimal(10000000);
     uint public feeVUP = convertDecimal(10);
+    uint public urlVUP1;
+    string public urlVUP;
     address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
     struct transferInStruct{
     uint128 amount;
