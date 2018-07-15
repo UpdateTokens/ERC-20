@@ -2,6 +2,10 @@
 contracts/.placeholder
 test/.placeholder
 node_modules
+information
 truffle.js
 truffle-config.js
 deploy_mnemonic.key
+build
+*.log
+*.txt

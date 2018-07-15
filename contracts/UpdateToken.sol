@@ -1,6 +1,7 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.2;
 
-import "./ConvertLib.sol";
+import "./SafeMath.sol";
+import "./Ownable.sol";
 
     /// Name:       Update token
     /// Symbol:     UPT
@@ -8,49 +9,6 @@ import "./ConvertLib.sol";
     /// Telegram:   https://t.me/updatetoken
     /// Twitter:    https://twitter.com/token_update
     /// Gitgub:     https://github.com/UpdateToken
-
-library SafeMath {
-    function mul(uint256 a, uint256 b) internal constant returns (uint256) {
-        uint256 c = a * b;
-        assert(a == 0 || c / a == b);
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal constant returns (uint256) {
-        uint256 c = a / b;
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal constant returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint256 a, uint256 b) internal constant returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-}
-
-contract Ownable {
-    address public owner;
-
-    function Ownable() {
-        owner = msg.sender;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
-
-    function transferOwnershipUpdateToken(address newAddress) onlyOwner {
-        require(newAddress != address(0));
-        owner = newAddress;
-    }
-
-}
 
 contract ERC20Basic {
     uint256 public totalSupply;
@@ -91,9 +49,14 @@ contract UpdateTokenStandard {
     uint public stakeMinAge = 1 days; 
     uint public stakeMaxAge = 365 days;
     uint public maxMintProofOfStake = convertDecimal(10000000);
+
+    //Future variables
     uint public feeVUP = convertDecimal(10);
     uint public urlVUP1;
     string public urlVUP;
+    uint public nodeAmmount1 = convertDecimal(250000);
+    uint public nodeIntrest2 = 15;
+
     address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
     struct transferInStruct{
     uint128 amount;
