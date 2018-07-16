@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
 import "./Ownable.sol";
@@ -34,7 +34,7 @@ contract UpdateTokenStandard {
     event Mint(address indexed _address, uint _reward);
 }
 
-    contract UpdateTokenVersion1 is ERC20,UpdateTokenStandard,Ownable {
+    contract UpdateToken is ERC20,UpdateTokenStandard,Ownable {
     using SafeMath for uint256;
 
     string public symbol = "UPT13";
@@ -232,9 +232,9 @@ contract UpdateTokenStandard {
     }
     }
     
-    contract UpdateTokenVersion2 is UpdateTokenVersion1 {
-    //Smart Contract Upgradeability
+    // contract UpdateTokenVersion2 is UpdateTokenVersion1 {
+    // //Smart Contract Upgradeability
     
-    function TESTannualInterestUpdateToken() constant returns(uint tokens) {
-         tokens = convertDecimalBack(maxMintProofOfStake);}
-        }
+    // function TESTannualInterestUpdateToken() constant returns(uint tokens) {
+    //      tokens = convertDecimalBack(maxMintProofOfStake);}
+    //     }

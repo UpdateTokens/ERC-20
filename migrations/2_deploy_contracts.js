@@ -1,16 +1,23 @@
-var UpdateToken = artifacts.require("UpdateToken.sol");
-var TestUpdateToken = artifacts.require("TestUpdateToken.sol");
-var ProxyContract = artifacts.require("contracts/Proxy.sol");
-var OwnableContract = artifacts.require("contracts/Ownable.sol");
-var SafeMathContract = artifacts.require("contracts/SafeMath.sol");
+var UpdateToken = artifacts.require("./UpdateToken");
+//var TestUpdateToken = artifacts.require("./TestUpdateToken");
+var ProxyContract = artifacts.require("./Proxy");
+var OwnableContract = artifacts.require("./Ownable");
+var SafeMathContract = artifacts.require("./SafeMath");
 
 module.exports = function(deployer) {
   //deployer.deploy(ConvertLib);
-  deployer.deploy(ProxyContract)
-  deployer.deploy(UpdateToken);
-  deployer.deploy(TestUpdateToken)
-  deployer.deploy(OwnableContract)
-  deployer.deploy(SafeMathContract)
+  // deployer.deploy(UpdateToken).then(
+  //   DeployedContract => {
+  //     deployer.deploy(OwnableContract,DeployedContract.address);
+  //   }
+  // )
+   deployer.deploy(ProxyContract)
+   deployer.deploy(UpdateToken);
+   //deployer.deploy(TestUpdateToken)
+   deployer.deploy(OwnableContract)
+   deployer.deploy(SafeMathContract)
+
+  
   //deployer.link(ConvertLib, UpdateToken);
 };
 

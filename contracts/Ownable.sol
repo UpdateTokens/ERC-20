@@ -1,9 +1,9 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.24;
 
-import "./UpdateToken.sol";
-import "./SafeMath.sol";
+ //import "./UpdateToken.sol";
 
 contract Ownable {
+    
     address public owner;
 
     function Ownable() {
@@ -19,5 +19,5 @@ contract Ownable {
         require(newAddress != address(0));
         owner = newAddress;
     }
-
 }
+
