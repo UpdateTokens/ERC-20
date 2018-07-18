@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
 import "./Ownable.sol";
+import "./StorageState.sol";
 
     /// Name:       Update token
     /// Symbol:     UPT
@@ -9,6 +10,7 @@ import "./Ownable.sol";
     /// Telegram:   https://t.me/updatetoken
     /// Twitter:    https://twitter.com/token_update
     /// Gitgub:     https://github.com/UpdateToken
+
 
 contract ERC20Basic {
     uint256 public totalSupply;
@@ -34,12 +36,21 @@ contract UpdateTokenStandard {
     event Mint(address indexed _address, uint _reward);
 }
 
-    contract UpdateToken is ERC20,UpdateTokenStandard,Ownable {
+    contract UpdateToken is StorageState, ERC20, UpdateTokenStandard, Ownable {
     using SafeMath for uint256;
 
-    string public symbol = "UPT13";
+       modifier onlyOwner() {
+         require(msg.sender == _storage.getAddress("owner"));
+         _;
+     }
+
+
+    string public symbol = "UPT21";
     string public name = "Update Token";
     uint public decimals = 18;
+
+    
+    
     uint public totalSupply;
     uint public maxTotalSupply;
     uint public totalInitialSupply;
@@ -58,17 +69,62 @@ contract UpdateTokenStandard {
     uint public nodeIntrest2 = 15;
 
     address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
-    struct transferInStruct{
+    
+    struct TransferInStruct {
     uint128 amount;
     uint64 time;
     }
 
     mapping(address => uint256) balances;
     mapping(address => mapping (address => uint256)) allowed;
-    mapping(address => transferInStruct[]) transferIns;
+    mapping(address => TransferInStruct[]) transferIns;
     event Burn(address indexed burner, uint256 value);
     mapping (address => bool) public frozenAccount;
     event FrozenFunds(address target, bool frozen);
+
+    // Storage
+    // ------------------------------------------
+    //Get from StorageState 
+    
+    function getBalance() view public returns (uint) {
+    return _storage.getBalance("total"); }
+    
+    function getChainStartTime() view public returns (uint) {
+    return _storage.getChainStartTime("total"); }
+    
+    function getMaxTotalSupply() view public returns (uint) {
+    return _storage.getMaxTotalSupply("total"); }
+    
+    function getTotalSupply() view public  returns (uint) {
+    return _storage.getTotalSupply("total"); }
+    
+    function getTotalInitialSupply() view public  returns (uint) {
+    return _storage.getTotalInitialSupply("total"); }
+    
+    //  ------------------------------------------
+    //Set from StorageState
+    
+    function setBalance(uint256 num) public {
+    _storage.setBalance("total", num);
+    }
+
+    function setChainStartTime(uint256 num) public {
+    _storage.setChainStartTime("total", num);
+    }
+
+    function setMaxTotalSupply(uint256 num) public {
+    _storage.setMaxTotalSupply("total", num);
+    }
+    
+    function setTotalInitialSupply(uint256 num) public {
+    _storage.setTotalInitialSupply("total", num);
+    }
+    
+    function setTotalSupply(uint256 num) public {
+    _storage.setTotalSupply("total", num);
+    }
+    
+    //-----------------------------------------------------------------
     
     modifier antiShortAddressAttack(uint size) {
         require(msg.data.length >= size + 4);
@@ -80,8 +136,15 @@ contract UpdateTokenStandard {
         _;
     }
 
+
+
     function UpdateToken() {
+
+        //_storage.setAddress("owner", msg.sender);
+        //_storage.setMaxTotalSupply("total", convertDecimal(150000000));
+        //setMaxTotalSupply(convertDecimal(150000000));
         maxTotalSupply = convertDecimal(150000000);
+        
         totalInitialSupply = convertDecimal(100000000);
         chainStartTime = now;
         chainStartBlockNumber = block.number;
@@ -104,8 +167,8 @@ contract UpdateTokenStandard {
         Transfer(msg.sender, _to, _value);
         if(transferIns[msg.sender].length > 0) delete transferIns[msg.sender];
         uint64 _now = uint64(now);
-        transferIns[msg.sender].push(transferInStruct(uint128(balances[msg.sender]),_now));
-        transferIns[_to].push(transferInStruct(uint128(_value),_now));
+        transferIns[msg.sender].push(TransferInStruct(uint128(balances[msg.sender]),_now));
+        transferIns[_to].push(TransferInStruct(uint128(_value),_now));
         return true;
     }
 
@@ -131,8 +194,8 @@ contract UpdateTokenStandard {
         Transfer(_from, _to, _value);
         if(transferIns[_from].length > 0) delete transferIns[_from];
         uint64 _now = uint64(now);
-        transferIns[_from].push(transferInStruct(uint128(balances[_from]),_now));
-        transferIns[_to].push(transferInStruct(uint128(_value),_now));
+        transferIns[_from].push(TransferInStruct(uint128(balances[_from]),_now));
+        transferIns[_to].push(TransferInStruct(uint128(_value),_now));
         return true;
     }
 
@@ -145,7 +208,7 @@ contract UpdateTokenStandard {
         totalSupply = totalSupply.add(reward);
         balances[msg.sender] = balances[msg.sender].add(reward);
         delete transferIns[msg.sender];
-        transferIns[msg.sender].push(transferInStruct(uint128(balances[msg.sender]),uint64(now)));
+        transferIns[msg.sender].push(TransferInStruct(uint128(balances[msg.sender]),uint64(now)));
 
         Mint(msg.sender, reward);
         return true;

@@ -1,36 +1,44 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.18;
 
-/**
- * @title Proxy
- * @dev Gives the possibility to delegate any call to a foreign implementation.
- * https://hackernoon.com/ethereum-smart-contract-upgradeability-hands-on-ceaf98be070f
- */
-contract Proxy {
+import "./Ownable.sol";
+import "./StorageState.sol";
 
-    address public implementation;
+contract Proxy is StorageState , Ownable {
+   
+  function Proxy(KeyValueStorage storage_ , address _owner) public {
+    _storage = storage_;
+    _storage.setAddress("owner",_owner);
+    
+  }
 
-    function upgradeTo(address _address) public {
-        implementation = _address;
+  event Upgraded(address indexed implementation);
+
+  address public _implementation;
+
+  function implementation() public view returns (address) {
+    return _implementation;
+  }
+
+  function upgradeTo(address impl) public onlyOwner {
+    require(_implementation != impl);
+    _implementation = impl;
+    Upgraded(impl);
+  }
+ 
+  function () payable public {
+    address _impl = implementation();
+    require(_impl != address(0));
+    bytes memory data = msg.data;
+
+    assembly {
+      let result := delegatecall(gas, _impl, add(data, 0x20), mload(data), 0, 0)
+      let size := returndatasize
+      let ptr := mload(0x40)
+      returndatacopy(ptr, 0, size)
+      switch result
+      case 0 { revert(ptr, size) }
+      default { return(ptr, size) }
     }
+  }
 
-    /**
-    * @dev Fallback function allowing to perform a delegatecall to the given implementation.
-    * This function will return whatever the implementation call returns
-    */
-    function () payable public {
-        address _impl = implementation;
-        require(_impl != address(0));
-
-        assembly {
-            let ptr := mload(0x40)
-            calldatacopy(ptr, 0, calldatasize)
-            let result := delegatecall(gas, _impl, ptr, calldatasize, 0, 0)
-            let size := returndatasize
-            returndatacopy(ptr, 0, size)
-
-            switch result
-            case 0 { revert(ptr, size) }
-            default { return(ptr, size) }
-        }
-    }
 }
