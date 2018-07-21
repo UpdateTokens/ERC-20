@@ -2,10 +2,10 @@ pragma solidity ^0.4.18;
 
 contract KeyValueStorage {
 
-    mapping(address => mapping(bytes32 => uint256)) _uintStorage;
-    mapping(address => mapping(bytes32 => address)) _addressStorage;
-    mapping(address => mapping(bytes32 => bool)) _boolStorage;
-    mapping (address => mapping (address => mapping(address => uint256)))  _allowanceStorage;
+    mapping(address => mapping(bytes32 => uint256)) _uintStorage; //done
+    mapping(address => mapping(bytes32 => address)) _addressStorage; //done
+    mapping(address => mapping(bytes32 => bool)) _boolStorage; //done
+    mapping (address => mapping (address => mapping(address => uint256)))  _allowanceStorage; //done
     //new ------------------------------------------------------------------------  
     mapping(address => mapping(bytes32 => uint256)) _balances; //done
     mapping(address => mapping (bytes32 => uint256)) _allowed; //done
@@ -64,12 +64,8 @@ contract KeyValueStorage {
        function getNodeAmmount(bytes32 key) public view returns (uint256) {
      _nodeAmmount[msg.sender][key];
   }
-  
-       function getAddressVUP(bytes32 key) public view returns (address) {
-     _addressVUP[msg.sender][key];
-  }
 
-       function getFeeVUP(bytes32 key) public view returns (string) {
+       function getUrlVUP(bytes32 key) public view returns (string) {
      _urlVUP[msg.sender][key];
   }
 
@@ -270,7 +266,7 @@ contract KeyValueStorage {
       delete _ammount[msg.sender][key];
   }
 
-     function deleteNodeAmmount(bytes32 key) public {
+     function deleteNodeIntrest(bytes32 key) public {
       delete _nodeIntrest[msg.sender][key];
   }
 
@@ -290,7 +286,7 @@ contract KeyValueStorage {
       delete _feeVUP[msg.sender][key];
   }
 
- function deleteSymbol(bytes32 key) public {
+ function deleteName(bytes32 key) public {
       delete _name[msg.sender][key];
   }
 
