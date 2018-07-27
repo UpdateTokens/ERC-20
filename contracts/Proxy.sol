@@ -3,11 +3,11 @@ pragma solidity ^0.4.18;
 import "./Ownable.sol";
 import "./StorageState.sol";
 
-contract Proxy is StorageState , Ownable {
+contract Proxy is StorageState, Ownable {
    
-  function Proxy(KeyValueStorage storage_ , address _owner) public {
+  function Proxy(KeyValueStorage storage_, address _owner) public {
     _storage = storage_;
-    _storage.setAddress("owner",_owner);
+    _storage.setAddress("owner", _owner);
     
   }
 

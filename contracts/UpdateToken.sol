@@ -20,7 +20,7 @@ import "./StorageState.sol";
     uint8 public decimals;                //How many decimals to show.
     string public symbol;                 //An identifier: eg SBX
 
-    function UpdateToken(KeyValueStorage _storage) {
+    function UpdateToken() {
     // set some immutable state
 
     name = "Update Token";
@@ -28,9 +28,14 @@ import "./StorageState.sol";
     //name = "UpdateToken";
     //symbol = UPT26;
     decimals = 18;
+    //addSupply(1000000000);
+
+    //mint(0x34E4Bc16af41D6ed2ecd9926Ad95799217039663, 100000);
 
     // set token owner in the key-value store
-    _storage.setAddress("owner", msg.sender);
+   // _storage.setAddress("owner", msg.sender);
+
+    //mint(owner, 50000000); //new
 
         //mint(msg.sender, convertDecimal(100000000));
       //totalSupply() = 
@@ -60,10 +65,11 @@ import "./StorageState.sol";
       return true;
     }
 
-    function mint(address to, uint256 amount) onlyOwner canMint public returns (bool) {
+    //function mint(address to, uint256 amount) onlyOwner canMint public returns (bool) {
+    function mint(address to, uint256 amount) onlyOwner canMint public {
       addSupply(amount);
       addBalance(to, amount);
-      return true;
+      //return true;
     }
 
     //Burn from other address

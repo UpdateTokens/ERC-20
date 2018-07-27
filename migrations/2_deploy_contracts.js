@@ -1,6 +1,10 @@
-var KeyValueStorageContract = artifacts.require("./KeyValueStorage.sol");
+var KeyValueStorage = artifacts.require("./KeyValueStorage.sol");
+
 
 module.exports = function(deployer) {
-   deployer.deploy(KeyValueStorageContract);
+
+  deployer.deploy(KeyValueStorage);
 };
+
+
 

@@ -5,8 +5,7 @@ import "./StorageState.sol";
 import "./Ownable.sol";
 contract UpdateTokenV2 is StorageState {
   
-
-  modifier onlyOwner() {
+modifier onlyOwner() {
         require(msg.sender == _storage.getAddress("owner"));
         _;
     }
@@ -19,7 +18,5 @@ function getNumberOfOwners() view public  returns (uint) {
    return _storage.getUint("total");
     
 }
-
-
 
 }
