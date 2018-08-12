@@ -1,19 +1,12 @@
 pragma solidity ^0.4.18;
 
 import "./Ownable.sol";
-import "./StorageState.sol";
 
-contract Proxy is StorageState, Ownable {
-   
-  function Proxy(KeyValueStorage storage_, address _owner) public {
-    _storage = storage_;
-    _storage.setAddress("owner", _owner);
-    
-  }
+contract Proxy is Ownable {
 
   event Upgraded(address indexed implementation);
 
-  address public _implementation;
+  address internal _implementation;
 
   function implementation() public view returns (address) {
     return _implementation;

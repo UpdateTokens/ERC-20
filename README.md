@@ -37,6 +37,8 @@ Implemented in `UpdateToken.sol`. The token is fully compatible with ERC20 stand
 * **Minimum Coin Age**: 1 Days
 * **Maximum Coin Age**: 365 Days
 * **PoS Annual Interest** : 10%
+* **Node Ammount** : 750.000 UPT
+* **PoS Node Annual Interest** : 20%
   
 Website:    https://updatetoken.org
 Telegram:   https://t.me/updatetoken
