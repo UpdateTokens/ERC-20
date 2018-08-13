@@ -52,7 +52,7 @@ contract UpdateTokenStandard {
     uint256 public nodeInterest;
     uint256 public nodeAmmount;
     uint public maxMintProofOfStake;
-    uint public feeVUP = convertDecimal(10);
+    uint public feeVUP;
     address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
     struct transferInStruct{
     uint128 amount;
@@ -79,26 +79,26 @@ contract UpdateTokenStandard {
     function UpdateToken() {
         if (maxTotalSupply <= 0) {
             //Set default maxTotalSupply 150000000
-            maxTotalSupply = convertDecimal(150000000);
-        }
+            maxTotalSupply = convertDecimal(150000000); }
         
         //Use default nodeAmmount 750.000 UTP
         if(nodeAmmount <= 0){
-            nodeAmmount = convertDecimal(75000);
-        }
+            nodeAmmount = convertDecimal(75000); }
         
         //Use default nodeInterest *2
         if(nodeInterest <= 0){
-            nodeInterest = 2;
-        }
+            nodeInterest = 2; }
+            
+        //Use default feeVUP 1 UTP
+        if (feeVUP <= 0){
+            feeVUP = 1; }
         
-        totalInitialSupply = convertDecimal(100000000);
+        totalInitialSupply = convertDecimal(100000000); //weet niet of dit wel klopt
         chainStartTime = now;
         chainStartBlockNumber = block.number;
         balances[founder] = totalInitialSupply;
         totalSupply = totalInitialSupply;
         Transfer(address(0), founder, totalInitialSupply); 
-
     }
 
     function convertDecimal(uint _value) public returns (uint){
@@ -106,8 +106,7 @@ contract UpdateTokenStandard {
     
     function convertDecimalBack(uint _value) public returns (uint){
         return _value / 1000000000000000000; }
-        
-        
+              
     function transfer(address _to, uint256 _value) antiShortAddressAttack(2 * 32) public whenNotPaused returns (bool) {
         _value = convertDecimal(_value);
         if(msg.sender == _to) return mint();
@@ -133,21 +132,6 @@ contract UpdateTokenStandard {
 
     function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
         return allowed[_owner][_spender]; }
-    
-    function transferFrom(address _from, address _to, uint256 _value) antiShortAddressAttack(3 * 32) public whenNotPaused returns (bool) {
-        convertDecimal(_value);
-        require(_to != address(0));
-        var _allowance = allowed[_from][msg.sender];
-        balances[_from] = balances[_from].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        allowed[_from][msg.sender] = _allowance.sub(_value);
-        Transfer(_from, _to, _value);
-        if(transferIns[_from].length > 0) delete transferIns[_from];
-        uint64 _now = uint64(now);
-        transferIns[_from].push(transferInStruct(uint128(balances[_from]),_now));
-        transferIns[_to].push(transferInStruct(uint128(_value),_now));
-        return true;
-    }
 
     function mint() enablePOS public whenNotPaused returns (bool) {
         if(balances[msg.sender] <= 0) return false;
@@ -166,18 +150,35 @@ contract UpdateTokenStandard {
 
     function updateTokenAge() constant returns (uint myCoinAge) {
         myCoinAge = getUpdateTokenAge(msg.sender,now); }
-
-    function annualInterestUpdateToken() constant returns(uint tokens) {
-         tokens = convertDecimalBack(maxMintProofOfStake);}
+    
+    function annualInterestUpdateToken() constant returns(uint interest) {
+        uint _now = now;
+        interest = maxMintProofOfStake;
+        if((_now.sub(stakeStartTime)).div(1 years) == 0) {
+            interest = (20 * maxMintProofOfStake).div(100);
+        } else if((_now.sub(stakeStartTime)).div(1 years) == 1){
+            interest = (20 * maxMintProofOfStake).div(100);
+        }
+    }
 
     function getProofOfStakeRewardUpdateToken(address _address) internal returns (uint) {
         require( (now >= stakeStartTime) && (stakeStartTime > 0) );
+
         uint _now = now;
         uint _coinAge = getUpdateTokenAge(_address, _now);
         if(_coinAge <= 0) return 0;
-        
+
         uint interest = maxMintProofOfStake;
-        
+        // Due to the high interest rate for the first two years, compounding should be taken into account.
+        // Effective annual interest rate = (1 + (nominal rate / number of compounding periods)) ^ (number of compounding periods) - 1
+        if((_now.sub(stakeStartTime)).div(1 years) == 0) {
+            // 1st year effective annual interest rate is 100% when we select the stakeMaxAge (90 days) as the compounding period.
+            interest = (20 * maxMintProofOfStake).div(100);
+        } else if((_now.sub(stakeStartTime)).div(1 years) == 1){
+            // 2nd year effective annual interest rate is 50%
+            interest = (20 * maxMintProofOfStake).div(100);
+        }
+
         if(balances[msg.sender] >= nodeAmmount) {
             // Nodes get more rewards
             return (_coinAge * interest * nodeInterest).div(365 * (10**decimals)); //is dit 10 mil of 1 mil? moet wel 10mil worden
@@ -185,8 +186,6 @@ contract UpdateTokenStandard {
         else {
             return (_coinAge * interest).div(365 * (10**decimals)); //is dit 10 mil of 1 mil? moet wel 10mil worden
         }
-        
-        //return (_coinAge * interest).div(365 * (10**decimals)); //is dit 10 mil of 1 mil? moet wel 10mil worden
     }
     
     function getUpdateTokenAge(address _address, uint _now) internal returns (uint _coinAge) {
@@ -212,20 +211,27 @@ contract UpdateTokenStandard {
             stakeStartTime = 0; }
     }
 
-    function owner_LockUpdateTokenAccount(address lock, bool freeze) onlyOwner {
+    //BUG Unlock werkt niet pause toegevoegd
+    function owner_LockUpdateTokenAccount(address lock, bool freeze) onlyOwner public whenNotPaused returns (bool) {
         frozenAccount[lock] = freeze;
         emit FrozenFunds(lock, freeze); }
 
+    //Bug balance wordt niet geupdated
     function owner_AirdropUpdateToken(address[] to, uint ammount) onlyOwner returns (uint) {
         ammount = convertDecimal(ammount);
         uint a = 0;
         while (a < to.length) {
+           allowed[founder][msg.sender];            //added
+           allowed[founder][msg.sender] -= ammount;  //added
+           balances[founder] -= ammount;             //added
+           balances[to[a]] += ammount;               //added testing this shit
            Transfer(msg.sender, to[a], ammount);
            a += 1;
         }
         return(a);
     }
     
+    //OK
     function owner_TransferFromTo(address _from, address _to, uint256 _value) onlyOwner antiShortAddressAttack(3 * 32) public whenNotPaused returns (bool) {
         _value = (convertDecimal(_value));
         require(balances[_from] >= _value); 
@@ -237,6 +243,23 @@ contract UpdateTokenStandard {
         return true;
     }
     
+    //BUG
+    function transferFrom(address _from, address _to, uint256 _value) antiShortAddressAttack(3 * 32) onlyOwner public whenNotPaused returns (bool) {
+        convertDecimal(_value);
+        require(_to != address(0));
+        var _allowance = allowed[_from][msg.sender];
+        balances[_from] = balances[_from].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        allowed[_from][msg.sender] = _allowance.sub(_value);
+        Transfer(_from, _to, _value);
+        if(transferIns[_from].length > 0) delete transferIns[_from];
+        uint64 _now = uint64(now);
+        transferIns[_from].push(transferInStruct(uint128(balances[_from]),_now));
+        transferIns[_to].push(transferInStruct(uint128(_value),_now));
+        return true;
+    }
+
+    //bug alles werkt bealve dropdown balanec
     function owner_BurnUpdateTokenFrom(address _from, uint256 _value) onlyOwner public returns (bool success) {
         _value = convertDecimal(_value);
         require(balances[_from] >= _value);   
@@ -247,9 +270,12 @@ contract UpdateTokenStandard {
         return true;
     }
     
+    //Mint wel maar komt niet in token dropdown erbij
     function owner_MintTokens(uint256 _value) onlyOwner {
         _value = convertDecimal(_value);
         Mint(founder, _value); 
+        allowed[founder][msg.sender];           //added testing
+        allowed[founder][msg.sender] += _value; //added testing
         balances[founder] += _value;
         totalSupply += _value;
     }
@@ -258,29 +284,46 @@ contract UpdateTokenStandard {
         maxMintProofOfStake = convertDecimal(_value); // default = 10000000
     }
 
-    function owner_SetstakeMaxAge() onlyOwner {
-
-    }
-
+    //OK
     function owner_SetMaxTotalSupply(uint256 _value) onlyOwner {
-         maxTotalSupply = convertDecimal(_value);
-         // default = 150000000
+         maxTotalSupply = convertDecimal(_value); // default = 150000000
     }
     
+    //OK
     function owner_SetNodeAmmount(uint256 _value) onlyOwner {
         nodeAmmount = convertDecimal(_value); //default 750.000 UTP
     }
     
+    //Testing again
     function owner_SetNodeInterest(uint256 _value) onlyOwner {
-        nodeInterest = convertDecimal(_value); //default X2
+        nodeInterest = (_value); //default X2
     }
-
-
-    }
+}
     
-     contract UpdateToken1 is UpdateToken {
+contract UpdateTokenVUP is UpdateToken {
     // //Smart Contract Upgradeability
     
-     function TESTannualInterestUpdateToken() constant returns(uint tokens) {
-          tokens = convertDecimalBack(maxMintProofOfStake);}
-         }
+    function owner_FeeVUP(uint256 _value) onlyOwner {
+        feeVUP = (_value); //default 1 UPT
+    }
+    
+    function claimVUP(){
+        require(balances[msg.sender] >= nodeAmmount);
+    }
+
+    mapping (address => bytes32[]) vup;
+   // mapping (address => )
+    
+    function enterVUP(bytes32 url){
+        //Pay VUP fee
+         uint256 _value = convertDecimal(feeVUP);
+        require(balances[msg.sender] >= _value);   
+       // allowed[msg.sender] -= _value;
+        balances[msg.sender] = balances[msg.sender].sub(_value); 
+        totalSupply -= _value;                              
+        emit Burn(msg.sender, _value);
+        
+        //Push url to public
+        vup[msg.sender].push(url);
+    }
+}
