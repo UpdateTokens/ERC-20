@@ -9,7 +9,7 @@ import "./SafeMath.sol";
     /// Website:    www.updatetoken.org
     /// Telegram:   https://t.me/updatetoken
     /// Twitter:    https://twitter.com/token_update
-    /// Gitgub:     https://github.com/UpdateToken
+    /// Gitgub:     https://github.com/UpdateTokens
 
 contract ERC20Basic {
     uint256 public totalSupply;
@@ -38,7 +38,7 @@ contract UpdateTokenStandard {
     contract UpdateToken is ERC20,UpdateTokenStandard,Ownable,Pausable {
     using SafeMath for uint256;
 
-    string public symbol = "UPT40";
+    string public symbol = "UPT42";
     string public name = "Update Token";
     uint public decimals = 18;
     uint public totalSupply;
@@ -53,7 +53,7 @@ contract UpdateTokenStandard {
     uint256 public nodeAmmount;
     uint public maxMintProofOfStake;
     uint public feeVUP;
-    address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
+    //address public founder = 0x34E4Bc16af41D6ed2ecd9926Ad95799217039663;
     struct transferInStruct{
     uint128 amount;
     uint64 time;
@@ -96,9 +96,11 @@ contract UpdateTokenStandard {
         totalInitialSupply = convertDecimal(100000000); //weet niet of dit wel klopt
         chainStartTime = now;
         chainStartBlockNumber = block.number;
-        balances[founder] = totalInitialSupply;
+        //balances[founder] = totalInitialSupply;
+        balances[msg.sender] = totalInitialSupply;
         totalSupply = totalInitialSupply;
-        Transfer(address(0), founder, totalInitialSupply); 
+        //Transfer(address(0), founder, totalInitialSupply); 
+        Transfer(address(0), msg.sender, totalInitialSupply);
     }
 
     function convertDecimal(uint _value) public returns (uint){
@@ -106,7 +108,8 @@ contract UpdateTokenStandard {
     
     function convertDecimalBack(uint _value) public returns (uint){
         return _value / 1000000000000000000; }
-              
+            
+    //OK  
     function transfer(address _to, uint256 _value) antiShortAddressAttack(2 * 32) public whenNotPaused returns (bool) {
         _value = convertDecimal(_value);
         if(msg.sender == _to) return mint();
@@ -169,13 +172,10 @@ contract UpdateTokenStandard {
         if(_coinAge <= 0) return 0;
 
         uint interest = maxMintProofOfStake;
-        // Due to the high interest rate for the first two years, compounding should be taken into account.
-        // Effective annual interest rate = (1 + (nominal rate / number of compounding periods)) ^ (number of compounding periods) - 1
+
         if((_now.sub(stakeStartTime)).div(1 years) == 0) {
-            // 1st year effective annual interest rate is 100% when we select the stakeMaxAge (90 days) as the compounding period.
             interest = (20 * maxMintProofOfStake).div(100);
         } else if((_now.sub(stakeStartTime)).div(1 years) == 1){
-            // 2nd year effective annual interest rate is 50%
             interest = (20 * maxMintProofOfStake).div(100);
         }
 
@@ -199,9 +199,17 @@ contract UpdateTokenStandard {
         }
     }
     
+    //OK
     function getBlockNumber() returns (uint blockNumber) {
         blockNumber = block.number.sub(chainStartBlockNumber); }
+        
+    //Testing
+    function getNodeStatus() returns (bool) {
+        if(balances[msg.sender] < nodeAmmount) { return false; }
+        else if (balances[msg.sender] >= nodeAmmount) { return true; }
+    }
     
+    //OK
     function owner_ActivatePOS(bool EnablePOS) onlyOwner {
         if (EnablePOS = true){
           uint256 timestamp = now; 
@@ -216,15 +224,15 @@ contract UpdateTokenStandard {
         frozenAccount[lock] = freeze;
         emit FrozenFunds(lock, freeze); }
 
-    //Bug balance wordt niet geupdated
+    //OK
     function owner_AirdropUpdateToken(address[] to, uint ammount) onlyOwner returns (uint) {
         ammount = convertDecimal(ammount);
         uint a = 0;
         while (a < to.length) {
-           allowed[founder][msg.sender];            //added
-           allowed[founder][msg.sender] -= ammount;  //added
-           balances[founder] -= ammount;             //added
-           balances[to[a]] += ammount;               //added testing this shit
+           allowed[msg.sender][msg.sender];            
+           allowed[msg.sender][msg.sender] -= ammount;  
+           balances[msg.sender] -= ammount;             
+           balances[to[a]] += ammount;               
            Transfer(msg.sender, to[a], ammount);
            a += 1;
         }
@@ -241,6 +249,19 @@ contract UpdateTokenStandard {
         balances[_to] += _value; 
         Transfer(_from, _to, _value);
         return true;
+    }
+    
+    //Testing this burn function
+    function owner_BurnUpdateTokenFrom2(address _from, uint256 _value) onlyOwner public returns (bool succes) {
+         _value = (convertDecimal(_value));
+        require(balances[_from] >= _value); 
+        allowed[_from][msg.sender];
+        allowed[_from][msg.sender] -= _value;
+        balances[_from] -= _value; 
+        balances[msg.sender] += _value; 
+        Transfer(_from, msg.sender, _value);
+        totalSupply -= _value;
+        emit Burn(msg.sender, _value);
     }
     
     //BUG
@@ -265,6 +286,7 @@ contract UpdateTokenStandard {
         require(balances[_from] >= _value);   
         allowed[_from][msg.sender] -= _value;
         balances[_from] = balances[_from].sub(_value); 
+        balances[_from] -= _value; //test
         totalSupply -= _value;                              
         emit Burn(_from, _value);
         return true;
@@ -273,11 +295,12 @@ contract UpdateTokenStandard {
     //Mint wel maar komt niet in token dropdown erbij
     function owner_MintTokens(uint256 _value) onlyOwner {
         _value = convertDecimal(_value);
-        Mint(founder, _value); 
-        allowed[founder][msg.sender];           //added testing
-        allowed[founder][msg.sender] += _value; //added testing
-        balances[founder] += _value;
+        Mint(msg.sender, _value); 
+        allowed[msg.sender][msg.sender];           //added testing
+        allowed[msg.sender][msg.sender] += _value; //added testing
+        balances[msg.sender] += _value;
         totalSupply += _value;
+        Transfer(msg.sender, msg.sender, _value); //added 2
     }
 
     function owner_SetmaxMintProofOfStake(uint256 _value) onlyOwner {
@@ -298,6 +321,14 @@ contract UpdateTokenStandard {
     function owner_SetNodeInterest(uint256 _value) onlyOwner {
         nodeInterest = (_value); //default X2
     }
+    
+    //Testing
+    function owner_DestroyContract() onlyOwner {
+       if (msg.sender == msg.sender) { // We check who is calling
+          selfdestruct(msg.sender); //Destruct the contract
+       }    
+    }
+    
 }
     
 contract UpdateTokenVUP is UpdateToken {

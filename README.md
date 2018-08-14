@@ -22,6 +22,7 @@ Update Token pre-minted tokens are initially assigned to the owner's account. Pr
 - convertDecimalBack (OK)
 - distributionUpdateToken
 - pauseUpdateToken (?)
+- destroying contract (?)
 - UpgradableSmartContract (OK)
 
 ### Token Information

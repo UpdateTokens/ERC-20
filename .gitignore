@@ -1,6 +1,7 @@
 /home/updatetoken/ERC-20/.git/
 contracts/.placeholder
 test/.placeholder
+test/TestUpdateToken.sol
 node_modules
 information
 truffle.js
@@ -9,3 +10,4 @@ deploy_mnemonic.key
 build
 *.log
 *.txt
+*.js
